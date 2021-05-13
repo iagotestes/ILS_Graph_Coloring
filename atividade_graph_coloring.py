@@ -1,4 +1,4 @@
-
+from collections import Counter
 
 
 
@@ -22,9 +22,10 @@ def import_data(path_to_file):
     return (graph_matrix, vertice_color)
 
 
-
+def cost_function(vertice_color):
+    return len(Counter(vertice_color).values())
 
 
 #print(import_data("./graph_coloring/dsjc250.5.col")[0])
-print(import_data("./graph_coloring/teste.txt")[0])
+print(cost_function(import_data("./graph_coloring/teste.txt")[1]))
 #import_data("./graph_coloring/dsjc250.5.col")
