@@ -38,40 +38,37 @@ def validate_neighbor_candidate(graph_matrix, neighbor_candidate, vertex_origina
     return True
 
 def local_search(size, history, solution, graph_matrix):
-    flaged_vertices = []
-    first = 0
-    #find first, this one will be the index for mapping the neighbors
-    while first < size:
-        if history[first] == 0: #immutable memory value
-            first += 1
-            continue
-        else:
-            break
-    #find the cost the best valid neighbor
-    i = first + 1
-    flaged_vertices.append(first)
-    neighbor_candidate = solution.copy()
-    cost = 0
-    while i < size:
-        if history[i] == 1:
-            aux = neighbor_candidate.copy()
-            neighbor_candidate[i] = neighbor_candidate[first] #trying to reduce colors
-            if validate_neighbor_candidate(graph_matrix, neighbor_candidate, first, i):
-                cost = cost_function(neighbor_candidate)
-                flaged_vertices.append(i)
-            else:
-                neighbor_candidate = aux  
-        i += 1
-    new_history = history.copy()
-    if len(flaged_vertices) > 1:
-        for flag in flaged_vertices:
-            new_history[flag] = 0
-        return (new_history, cost, neighbor_candidate)
-    else:
-        if first < size:
-            new_history[first] = 0
-        return (new_history, cost_function(neighbor_candidate), neighbor_candidate)
+    free_vertices = [i for i in range(size) if history[i] == 1]
+    first_iteration = True
+    best_cost = None
+    new_history = []
+    final_solution = []
 
+    for vertex in free_vertices:
+        candidate_solution = solution.copy()
+        candidate_history = history.copy()
+        
+        for i in range(size):
+            if history[i] == 1:
+                aux = candidate_solution.copy()
+                candidate_solution[i] = candidate_solution[vertex]
+                if validate_neighbor_candidate(graph_matrix, candidate_solution, vertex, i):
+                    candidate_history[i] = 0
+                    continue
+                else:
+                    candidate_solution = aux
+
+        current_cost = cost_function(candidate_solution)
+        if first_iteration:
+            first_iteration = False
+            best_cost = current_cost
+            final_solution = candidate_solution
+            new_history = candidate_history
+        elif current_cost < best_cost:
+            best_cost = current_cost
+            final_solution = candidate_solution
+            new_history = candidate_history
+    return (new_history, best_cost, final_solution)
 
 def perturbation(size, history, solution, graph_matrix):
     free_vertices = [i for i in range(size) if history[i] == 1]
@@ -152,6 +149,7 @@ def execute_mean_test(cicles, path, criteria_flag):
     mean_cost = result[0]
     mean_time = end - start
     i=1
+    print("cicle: " + str(i) +" m_size:" +  str(size) + " criteria: " + str(criteria_flag))
     while i < cicles:
             start = timer()
             result = ils(size, graph, criteria_flag)
